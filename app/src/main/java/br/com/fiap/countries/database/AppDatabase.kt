@@ -19,7 +19,7 @@ abstract class AppDatabase: RoomDatabase() {
                 context,
                 AppDatabase::class.java,
                 COUNTRY_DATABASE_NAME
-            ).build()
+            ).allowMainThreadQueries().build()
 
             return INSTANCE ?: let {
                 INSTANCE = instance
