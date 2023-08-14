@@ -8,6 +8,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import br.com.fiap.countries.SnackBarUtil.showSnackBar
+import br.com.fiap.countries.database.AppDatabase
 import br.com.fiap.countries.databinding.FragmentRegisterCountryBinding
 import br.com.fiap.countries.database.CountryModel
 
@@ -17,6 +18,12 @@ class RegisterCountryFragment : Fragment() {
 
     private val countryInfoArgument by lazy {
         arguments?.getParcelable(COUNTRY_MODEL_BUNDLE_KEY) as? CountryModel
+    }
+
+    private val appDb: AppDatabase? by lazy {
+        view?.context?.let {
+            AppDatabase.getDatabase(it)
+        }
     }
 
     override fun onCreateView(
@@ -39,6 +46,7 @@ class RegisterCountryFragment : Fragment() {
 
         binding.registerUpdateCountryButton.run {
             text = if(countryInfoArgument == null) {
+
                 getString(R.string.register_country_button_label)
             } else {
                 getString(R.string.update_country_button_label)
@@ -74,7 +82,24 @@ class RegisterCountryFragment : Fragment() {
                 countryModel.id = it.id
             }
 
-            CountriesDataSource.countriesList.add(countryModel)
+            if (countryInfoArgument != null) {
+                appDb?.countryDAO()?.update(countryModel)
+                showSnackBar(
+                    binding.registerUpdateCountryButton,
+                    getString(R.string.register_country_success_registered_message,
+                        countryModel.name
+                    )
+                )
+            } else {
+                appDb?.countryDAO()?.inserir(countryModel)
+                showSnackBar(
+                    binding.registerUpdateCountryButton,
+                    getString(R.string.register_country_success_updated_message,
+                        countryModel.name
+                    )
+                )
+            }
+
             clearForm()
             showSnackBar(
                 binding.registerUpdateCountryButton,
